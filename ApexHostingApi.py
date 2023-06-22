@@ -25,6 +25,7 @@ class ApexHostingApi:
         options.add_argument(
             "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/80.0.3987.163 Safari/537.36")
+        options.add_argument('--disable-dev-shm-usage')
         if headless:
             options.add_argument('--headless')
         self.driver = uc.Chrome(options=options)

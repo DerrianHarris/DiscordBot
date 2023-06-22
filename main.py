@@ -8,7 +8,13 @@ from ApexHostingApi import ApexHostingApi
 
 load_dotenv()
 
-MY_GUILD = discord.Object(id=1057166212536217680)
+SERVER_ID=os.getenv('SERVER_ID')
+CHANNEL_ID=int(os.getenv('CHANNEL_ID'))
+DISCORD_TOKEN=os.getenv('DISCORD_TOKEN')
+LOG_LEVEL=os.getenv('LOG_LEVEL')
+ROLE_NAME=os.getenv('ROLE_NAME')
+
+MY_GUILD = discord.Object(id=SERVER_ID)
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -30,13 +36,13 @@ class MyClient(discord.Client):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
 
-aph=ApexHostingApi()
-logging.basicConfig(format='%(asctime)s: [%(levelname)s] %(message)s',level=logging.DEBUG, handlers=[
+aph=ApexHostingApi(headless=True,min_timeout=10,max_timeout=15)
+logging.basicConfig(format='%(asctime)s: [%(levelname)s] %(message)s',level=int(LOG_LEVEL), handlers=[
         logging.FileHandler("discord.log"),
         logging.StreamHandler()
     ])
 
-role_name="Admin"
+
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
 
@@ -50,15 +56,17 @@ async def on_ready():
 @client.tree.command()
 async def get_server_status(interaction: discord.Interaction):
     """Gets Current Server Status"""
-    await interaction.response.defer()
     log_requests(interaction, f'get_server_status')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
     user = interaction.user
-
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    channel = interaction.channel
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
         return
-
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
+        return
+    await interaction.response.defer()
     Status_Message = "Sorry, I could not load the server status. :("
     try:
         aph.login()
@@ -70,15 +78,18 @@ async def get_server_status(interaction: discord.Interaction):
 @client.tree.command()
 async def start_server(interaction: discord.Interaction):
     """Starts the server"""
-    await interaction.response.defer()
     log_requests(interaction, f'start_server')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
+    channel = interaction.channel
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
         return
-
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
+        return
     command_msg = "Sorry, I could not start the server. :("
+    await interaction.response.defer()
     try:
         aph.login()
         aph.start_server()
@@ -90,14 +101,17 @@ async def start_server(interaction: discord.Interaction):
 @client.tree.command()
 async def stop_server(interaction: discord.Interaction):
     """Stops the server"""
-    await interaction.response.defer()
     log_requests(interaction, f'stop_server')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
+    channel = interaction.channel
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
         return
-
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
+        return
+    await interaction.response.defer()
     command_msg = "Sorry, I could not stop the server. :("
     try:
         aph.login()
@@ -110,14 +124,18 @@ async def stop_server(interaction: discord.Interaction):
 @client.tree.command()
 async def restart_server(interaction: discord.Interaction):
     """Restarts the server"""
-    await interaction.response.defer()
     log_requests(interaction, f'restart_server')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    channel = interaction.channel
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
+        return
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
         return
 
+    await interaction.response.defer()
     command_msg = "Sorry, I could not restart the server. :("
     try:
         aph.login()
@@ -130,14 +148,18 @@ async def restart_server(interaction: discord.Interaction):
 @client.tree.command()
 async def force_stop_server(interaction: discord.Interaction):
     """Force stops the server"""
-    await interaction.response.defer()
     log_requests(interaction, f'force_stop_server')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    channel = interaction.channel
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
+        return
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
         return
 
+    await interaction.response.defer()
     command_msg = "Sorry, I could not force stop the server. :("
     try:
         aph.login()
@@ -153,14 +175,19 @@ async def force_stop_server(interaction: discord.Interaction):
 )
 async def run_console_command(interaction: discord.Interaction, command: str):
     """Run a command using the server console log"""
-    await interaction.response.defer()
     log_requests(interaction, f'run_console_command [command={command}]')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
+    channel = interaction.channel
+
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
+        return
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
         return
 
+    await interaction.response.defer()
     command_msg = "Sorry, I could not send the command. :("
     try:
         aph.login()
@@ -176,14 +203,18 @@ async def run_console_command(interaction: discord.Interaction, command: str):
 @app_commands.describe(lines='The number of lines you want from the logs. Min: 1 Max: 20 Default: 10')
 async def get_console_log(interaction: discord.Interaction, lines: Optional[app_commands.Range[int, 1, 20]] = 10):
     """Returns last messages from console logs. Defaults to 10"""
-    await interaction.response.defer()
     log_requests(interaction,f'get_console_log [lines={lines}]')
-    role = discord.utils.get(interaction.guild.roles, name=role_name)
+    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
     user = interaction.user
-    if role not in interaction.user.roles:
-        await interaction.followup.send(f"{user.name} does not have the correct role! Role: {role_name}")
-        return
+    channel = interaction.channel
 
+    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+        await interaction.response.send_message(f"This is the wrong channel!")
+        return
+    if role is not None and role not in interaction.user.roles:
+        await interaction.response.send_message(f"{user.name} does not have the correct role! Role: {ROLE_NAME}")
+        return
+    await interaction.response.defer()
     Log_Message = "Sorry, I could not load the console log. :("
     try:
         aph.login()
@@ -196,6 +227,7 @@ async def get_console_log(interaction: discord.Interaction, lines: Optional[app_
 
 def log_requests(interaction: discord.Interaction,command: str):
     user = interaction.user
-    logging.debug(f'Username: {user.name} | Roles: {user.roles} | Request: {command}')
+    channel = interaction.channel
+    logging.info(f'Username: {user.name} | Channel: {channel} | Roles: {user.roles} | Request: {interaction.command.name}')
 
-client.run(os.getenv('DISCORD_TOKEN'))
+client.run(DISCORD_TOKEN)
