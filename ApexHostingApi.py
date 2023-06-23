@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 import time
@@ -32,22 +33,23 @@ class ApexHostingApi:
         self.min_timeout = min_timeout
         self.max_timeout = max_timeout
 
-    def get_server_status(self):
+    async def get_server_status(self):
         try:
             print("Getting Server Status")
-            soup = self.go_to_console()
+            soup = await self.go_to_console()
             status_icon_div = soup.find('div', id='statusicon-ajax')
             img_source = status_icon_div.img.attrs['src']
             status = img_source.split("/")[-1].split(".png")[0]
+            print(f"Server Status: {status}")
             return status
         except Exception as err:
             print(err)
             raise
 
-    def stop_server(self):
+    async def stop_server(self):
         try:
             print("Stopping Server")
-            self.go_to_console()
+            await self.go_to_console()
             button = self.driver.find_element("name", "yt1")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to stop server.")
@@ -57,10 +59,10 @@ class ApexHostingApi:
             print(err)
             raise
 
-    def force_stop_server(self):
+    async def force_stop_server(self):
         try:
             print("Force stopping Server")
-            self.go_to_console()
+            await self.go_to_console()
             button = self.driver.find_element("name", "yt3")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to force stop server.")
@@ -70,10 +72,10 @@ class ApexHostingApi:
             print(err)
             raise
 
-    def start_server(self):
+    async def start_server(self):
         try:
             print("Starting Server")
-            self.go_to_console()
+            await self.go_to_console()
             button = self.driver.find_element("name", "yt0")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to start server.")
@@ -83,10 +85,10 @@ class ApexHostingApi:
             print(err)
             raise
 
-    def restart_server(self):
+    async def restart_server(self):
         try:
             print("Restarting Server")
-            self.go_to_console()
+            await self.go_to_console()
             button = self.driver.find_element("name", "yt2")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to restart server.")
@@ -96,28 +98,28 @@ class ApexHostingApi:
             print(err)
             raise
 
-    def go_to_dashboard(self):
+    async def go_to_dashboard(self):
         self.driver.get(self.get_server_dashboard_url())
-        time.sleep(self.get_timeout())
+        await asyncio.sleep(self.get_timeout())
         page_source = self.driver.page_source
         soup = BeautifulSoup(page_source, features="html.parser")
         if soup.find('div', id='statusicon-ajax') is None:
             raise Exception("Server dashboard failed to load.")
         return soup
 
-    def go_to_console(self):
+    async def go_to_console(self):
         self.driver.get(self.get_server_console_url())
-        time.sleep(self.get_timeout())
+        await asyncio.sleep(self.get_timeout())
         page_source = self.driver.page_source
         soup = BeautifulSoup(page_source, features="html.parser")
         if soup.find('div', id='statusicon-ajax') is None:
             raise Exception("Server dashboard failed to load.")
         return soup
 
-    def run_console_command(self, command):
+    async def run_console_command(self, command):
         try:
             print("Running console command: ", command)
-            self.go_to_console()
+            await self.go_to_console()
             self.driver.find_element("id", "command").send_keys(command)
             button = self.driver.find_element("name", "yt4")
             if button.get_attribute('disabled') is not None:
@@ -128,10 +130,10 @@ class ApexHostingApi:
             print(err)
             raise
 
-    def get_console_log(self, lines=10):
+    async def get_console_log(self, lines=10):
         try:
             print("Getting console logs")
-            soup = self.go_to_console()
+            soup = await self.go_to_console()
             console_log = soup.find('div', id='log-ajax')
             log_entry_regex = "\d{2}.\d{2} \d{2}:\d{2}:\d{2}"
             entries = re.sub(log_entry_regex, lambda x: '\n' + x.group(0), console_log.text)
@@ -147,7 +149,7 @@ class ApexHostingApi:
     def get_server_console_url(self):
         return self.ApexHostingPanelServerDashboardURL + "log/" + self.ServerID
 
-    def login(self):
+    async def login(self):
         try:
             print("Loading Login Page")
             self.driver.get(self.ApexHostingPanelLoginURL)
@@ -163,7 +165,7 @@ class ApexHostingApi:
                 if soup.find('li', id='logout_link') is not None:
                     # We are already logged in
                     print("Already Logged In! Skipping...")
-                    self.get_server_id()
+                    await self.get_server_id()
                     return
                 else:
                     raise Exception("Login Page Unable to load")
@@ -172,7 +174,7 @@ class ApexHostingApi:
             self.driver.find_element("id", "LoginForm_password").send_keys(self.APH_PASSWORD)
             self.driver.find_element("name", "yt0").click()
             print("Trying login...")
-            time.sleep(self.get_timeout())
+            await asyncio.sleep(self.get_timeout())
             page_source = self.driver.page_source
             soup = BeautifulSoup(page_source, features="html.parser")
             soup.find('div', id='LoginForm_name')
@@ -181,12 +183,12 @@ class ApexHostingApi:
             if soup.find('li', id='logout_link') is None:
                 raise Exception("Login Failed. Api blocked by Url.")
             print("Login Succeeded")
-            self.get_server_id()
+            await self.get_server_id()
         except Exception as err:
             print(err)
             raise
 
-    def get_server_id(self):
+    async def get_server_id(self):
         page_source = self.driver.page_source
         soup = BeautifulSoup(page_source, features="html.parser")
         server_index = soup.find('a', class_='btn btn-primary btn-block').attrs['href']
@@ -196,7 +198,7 @@ class ApexHostingApi:
         try:
             element = WebDriverWait(self.driver, self.get_timeout()).until(
                 EC.presence_of_element_located((By.ID, 'statusicon-ajax')))
-        except:
+        except Exception:
             pass
         if element is None:
             raise Exception("Server dashboard failed to load.")
