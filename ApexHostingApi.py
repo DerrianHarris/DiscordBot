@@ -3,6 +3,7 @@ import os
 import random
 import time
 import re
+import logging
 
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
@@ -35,67 +36,67 @@ class ApexHostingApi:
 
     async def get_server_status(self):
         try:
-            print("Getting Server Status")
+            logging.debug("Getting Server Status")
             soup = await self.go_to_console()
             status_icon_div = soup.find('div', id='statusicon-ajax')
             img_source = status_icon_div.img.attrs['src']
             status = img_source.split("/")[-1].split(".png")[0]
-            print(f"Server Status: {status}")
+            logging.debug(f"Server Status: {status}")
             return status
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def stop_server(self):
         try:
-            print("Stopping Server")
+            logging.debug("Stopping Server")
             await self.go_to_console()
             button = self.driver.find_element("name", "yt1")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to stop server.")
             button.click()
-            print("Command sent!")
+            logging.debug("Command sent!")
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def force_stop_server(self):
         try:
-            print("Force stopping Server")
+            logging.debug("Force stopping Server")
             await self.go_to_console()
             button = self.driver.find_element("name", "yt3")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to force stop server.")
             button.click()
-            print("Command sent!")
+            logging.debug("Command sent!")
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def start_server(self):
         try:
-            print("Starting Server")
+            logging.debug("Starting Server")
             await self.go_to_console()
             button = self.driver.find_element("name", "yt0")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to start server.")
             button.click()
-            print("Command sent!")
+            logging.debug("Command sent!")
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def restart_server(self):
         try:
-            print("Restarting Server")
+            logging.debug("Restarting Server")
             await self.go_to_console()
             button = self.driver.find_element("name", "yt2")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to restart server.")
             button.click()
-            print("Command sent!")
+            logging.debug("Command sent!")
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def go_to_dashboard(self):
@@ -118,29 +119,29 @@ class ApexHostingApi:
 
     async def run_console_command(self, command):
         try:
-            print("Running console command: ", command)
+            logging.debug("Running console command: ", command)
             await self.go_to_console()
             self.driver.find_element("id", "command").send_keys(command)
             button = self.driver.find_element("name", "yt4")
             if button.get_attribute('disabled') is not None:
                 raise Exception("Failed to send command to server.")
             button.click()
-            print("Command sent!")
+            logging.debug("Command sent!")
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def get_console_log(self, lines=10):
         try:
-            print("Getting console logs")
+            logging.debug("Getting console logs")
             soup = await self.go_to_console()
             console_log = soup.find('div', id='log-ajax')
             log_entry_regex = "\d{2}.\d{2} \d{2}:\d{2}:\d{2}"
             entries = re.sub(log_entry_regex, lambda x: '\n' + x.group(0), console_log.text)
             entries = entries.split('\n')
-            return list(filter(None, entries))[-lines:]
+            return '\n'.join(list(filter(None, entries))[-lines:])
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     def get_server_dashboard_url(self):
@@ -151,7 +152,7 @@ class ApexHostingApi:
 
     async def login(self):
         try:
-            print("Loading Login Page")
+            logging.debug("Loading Login Page")
             self.driver.get(self.ApexHostingPanelLoginURL)
             element = None
             try:
@@ -164,16 +165,16 @@ class ApexHostingApi:
                 soup = BeautifulSoup(page_source, features="html.parser")
                 if soup.find('li', id='logout_link') is not None:
                     # We are already logged in
-                    print("Already Logged In! Skipping...")
+                    logging.debug("Already Logged In! Skipping...")
                     await self.get_server_id()
                     return
                 else:
                     raise Exception("Login Page Unable to load")
-            print("Login Page Loaded")
+            logging.debug("Login Page Loaded")
             self.driver.find_element("id", "LoginForm_name").send_keys(self.APH_USERNAME)
             self.driver.find_element("id", "LoginForm_password").send_keys(self.APH_PASSWORD)
             self.driver.find_element("name", "yt0").click()
-            print("Trying login...")
+            logging.debug("Trying login...")
             await asyncio.sleep(self.get_timeout())
             page_source = self.driver.page_source
             soup = BeautifulSoup(page_source, features="html.parser")
@@ -182,10 +183,10 @@ class ApexHostingApi:
                 raise Exception("Login Failed. Either Username/Password is incorrect")
             if soup.find('li', id='logout_link') is None:
                 raise Exception("Login Failed. Api blocked by Url.")
-            print("Login Succeeded")
+            logging.debug("Login Succeeded")
             await self.get_server_id()
         except Exception as err:
-            print(err)
+            logging.error(err)
             raise
 
     async def get_server_id(self):
@@ -204,7 +205,7 @@ class ApexHostingApi:
             raise Exception("Server dashboard failed to load.")
         url = self.driver.current_url
         self.ServerID = url.split('/')[-1]
-        print("Server Id: ", self.ServerID)
+        logging.debug("Server Id: ", self.ServerID)
         return self.ServerID
 
     def get_timeout(self):
