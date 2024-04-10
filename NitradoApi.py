@@ -23,22 +23,21 @@ class NitradoApi:
         response = requests.get(f'https://api.nitrado.net/services/{self.SERVER_ID}/gameservers', auth=BearerAuth(self.NITRADO_TOKEN))
         print("Status Code: " + str(response.status_code))
         print("Response: " + str(response.content))
+        response_json = response.json()
         if response.status_code == 200:
-            response_json = response.json()
             status = response_json["data"]["gameserver"]["status"]
-            return status
-        return None
+        else:
+            status = response_json["message"]
+        return status
     async def stop_server(self):
         print("Stopping Server")
         response = requests.post(f'https://api.nitrado.net/services/{self.SERVER_ID}/gameservers/stop',
                                 auth=BearerAuth(self.NITRADO_TOKEN))
         print("Status Code: " + str(response.status_code))
         print("Response: " + str(response.content))
-        if response.status_code == 200:
-            response_json = response.json()
-            status = response_json["message"]
-            return status
-        return None
+        response_json = response.json()
+        status = response_json["message"]
+        return status
 
     async def start_server(self,game="arksa"):
         print("Starting Server for " + game)
@@ -47,11 +46,9 @@ class NitradoApi:
                                  auth=BearerAuth(self.NITRADO_TOKEN), params=payload)
         print("Status Code: " + str(response.status_code))
         print("Response: " + str(response.content))
-        if response.status_code == 200:
-            response_json = response.json()
-            status = response_json["message"]
-            return status
-        return None
+        response_json = response.json()
+        status = response_json["message"]
+        return status
 
     async def uninstall_game(self,game="arksa"):
         print("Uninstalling game for " + game)
@@ -60,11 +57,9 @@ class NitradoApi:
                                  auth=BearerAuth(self.NITRADO_TOKEN), params=payload)
         print("Status Code: " + str(response.status_code))
         print("Response: " + str(response.content))
-        if response.status_code == 200:
-            response_json = response.json()
-            status = response_json["message"]
-            return status
-        return None
+        response_json = response.json()
+        status = response_json["message"]
+        return status
 
     async def restart_server(self, message="Restarting...", restart_message="Restarting..."):
         print("Restarting Server")
@@ -73,11 +68,9 @@ class NitradoApi:
                                  auth=BearerAuth(self.NITRADO_TOKEN), params=payload)
         print("Status Code: " + str(response.status_code))
         print("Response: " + str(response.content))
-        if response.status_code == 200:
-            response_json = response.json()
-            status = response_json["message"]
-            return status
-        return None
+        response_json = response.json()
+        status = response_json["message"]
+        return status
     async def run_console_command(self, command=""):
         print("Running command on Server: " + command)
         with Client(self.RCON_IP, self.RCON_PORT, passwd=self.RCON_PWD) as client:
