@@ -16,7 +16,7 @@ from NitradoApi import NitradoApi
 load_dotenv()
 
 SERVER_ID = os.getenv("SERVER_ID")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+CHANNEL_NAME = os.getenv("CHANNEL_NAME")
 MAX_RETRIES = int(os.getenv("MAX_RETRIES"))
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 LOG_LEVEL = os.getenv("LOG_LEVEL")
@@ -262,30 +262,12 @@ async def run_server_command(
 
 
 async def check_request(interaction: discord.Interaction):
-
-    user = interaction.user
     channel = interaction.channel
-    guild = interaction.guild
-    role = discord.utils.get(guild.roles, name=ROLE_NAME)
-    if SERVER_ID is not None and guild.id != SERVER_ID:
-        await interaction.response.send_message(
-            f"This is the wrong server!", ephemeral=True
-        )
-        return
-
-    if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
+    if CHANNEL_NAME is not None and channel.name != CHANNEL_NAME:
         await interaction.response.send_message(
             f"This is the wrong channel!", ephemeral=True
         )
         return
-    if role is not None and role not in interaction.user.roles:
-        await interaction.response.send_message(
-            f"{user.name} does not have the correct role! Role: {ROLE_NAME}",
-            ephemeral=True,
-        )
-        return
-
-
 def retry(func, param=None, max_tries=2):
     count = 0
     result = ""
