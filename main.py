@@ -262,9 +262,16 @@ async def run_server_command(
 
 
 async def check_request(interaction: discord.Interaction):
-    role = discord.utils.get(interaction.guild.roles, name=ROLE_NAME)
+
     user = interaction.user
     channel = interaction.channel
+    guild = interaction.guild
+    role = discord.utils.get(guild.roles, name=ROLE_NAME)
+    if SERVER_ID is not None and guild.id != SERVER_ID:
+        await interaction.response.send_message(
+            f"This is the wrong server!", ephemeral=True
+        )
+        return
 
     if CHANNEL_ID is not None and channel.id != CHANNEL_ID:
         await interaction.response.send_message(
