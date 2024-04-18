@@ -10,7 +10,7 @@ import discord
 from typing import Optional
 from dotenv import load_dotenv
 
-# from ApexHostingApi import ApexHostingApi
+from ApexHostingApi import ApexHostingApi
 from NitradoApi import NitradoApi
 
 load_dotenv()
@@ -54,7 +54,7 @@ async def get_server_status(interaction: discord.Interaction):
     log_requests(interaction, f"get_server_status")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.get_server_status)
@@ -76,7 +76,7 @@ async def start_server(interaction: discord.Interaction):
         f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
     )
     if USE_NITRADO:
-        command_msg = await run_server_command(napi.start_server)
+        command_msg = await run_server_command(napi.safe_start_server)
     else:
         command_msg = await run_server_command(aph.start_server)
     if command_msg is not None:
@@ -95,7 +95,7 @@ async def stop_server(interaction: discord.Interaction):
         f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
     )
     if USE_NITRADO:
-        command_msg = await run_server_command(napi.stop_server)
+        command_msg = await run_server_command(napi.safe_stop_server)
     else:
         command_msg = await run_server_command(aph.stop_server)
     if command_msg is not None:
@@ -106,7 +106,7 @@ async def stop_server(interaction: discord.Interaction):
 
 
 @bot.command()
-async def safe_stop_server(
+async def wait_stop_server(
     ctx,
     minutes: discord.Option(
         int,
@@ -117,7 +117,7 @@ async def safe_stop_server(
     ),
 ):
     """Stops the server after the duration given by the requester"""
-    log_requests(ctx, f"safe_stop_server")
+    log_requests(ctx, f"wait_stop_server")
     await check_request(ctx)
     await ctx.response.send_message(f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True)
     if USE_NITRADO:
@@ -155,6 +155,25 @@ async def restart_server(interaction: discord.Interaction):
 
 
 @bot.command()
+async def force_start_server(interaction: discord.Interaction):
+    """Force starts the server"""
+    log_requests(interaction, f"force_start_server")
+    await check_request(interaction)
+    await interaction.response.send_message(
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+    )
+    if USE_NITRADO:
+        command_msg = await run_server_command(napi.start_server)
+    else:
+        command_msg = await run_server_command(aph.start_server)
+    if command_msg is not None:
+        command_msg = f"```{command_msg}```"
+    else:
+        command_msg = f"```{ERROR_MESSAGE}```"
+    await interaction.channel.send(command_msg)
+
+
+@bot.command()
 async def force_stop_server(interaction: discord.Interaction):
     """Force stops the server"""
     log_requests(interaction, f"force_stop_server")
@@ -163,9 +182,9 @@ async def force_stop_server(interaction: discord.Interaction):
         f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
     )
     if USE_NITRADO:
-        command_msg = "Command not yet supported for this server"
+        command_msg = await run_server_command(napi.stop_server)
     else:
-        command_msg = await run_server_command(aph.restart_server)
+        command_msg = await run_server_command(aph.force_stop_server)
     if command_msg is not None:
         command_msg = f"```{command_msg}```"
     else:
@@ -268,6 +287,8 @@ async def check_request(interaction: discord.Interaction):
             f"This is the wrong channel!", ephemeral=True
         )
         return
+
+
 def retry(func, param=None, max_tries=2):
     count = 0
     result = ""
