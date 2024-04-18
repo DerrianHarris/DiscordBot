@@ -73,7 +73,7 @@ async def start_server(interaction: discord.Interaction):
     log_requests(interaction, f"start_server")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.safe_start_server)
@@ -92,7 +92,7 @@ async def stop_server(interaction: discord.Interaction):
     log_requests(interaction, f"stop_server")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.safe_stop_server)
@@ -119,7 +119,7 @@ async def wait_stop_server(
     """Stops the server after the duration given by the requester"""
     log_requests(ctx, f"wait_stop_server")
     await check_request(ctx)
-    await ctx.response.send_message(f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True)
+    await ctx.response.send_message(f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False)
     if USE_NITRADO:
         command_msg = await run_server_command(
             napi.stop_server, interaction=ctx, minutes=minutes
@@ -141,7 +141,7 @@ async def restart_server(interaction: discord.Interaction):
     log_requests(interaction, f"restart_server")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.restart_server)
@@ -160,7 +160,7 @@ async def force_start_server(interaction: discord.Interaction):
     log_requests(interaction, f"force_start_server")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.start_server)
@@ -179,7 +179,7 @@ async def force_stop_server(interaction: discord.Interaction):
     log_requests(interaction, f"force_stop_server")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.stop_server)
@@ -201,7 +201,7 @@ async def run_console_command(
     log_requests(interaction, f"run_console_command [command={command}]")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = await run_server_command(napi.run_console_command, param=command)
@@ -231,7 +231,7 @@ async def get_console_log(
     log_requests(interaction, f"get_console_log [lines={lines}]")
     await check_request(interaction)
     await interaction.response.send_message(
-        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=True
+        f"```{FIRST_RESPONSE_MESSAGE}```", ephemeral=False
     )
     if USE_NITRADO:
         command_msg = "Command not yet supported for this server"
@@ -284,7 +284,7 @@ async def check_request(interaction: discord.Interaction):
     channel = interaction.channel
     if CHANNEL_NAME is not None and channel.name != CHANNEL_NAME:
         await interaction.response.send_message(
-            f"This is the wrong channel!", ephemeral=True
+            f"This is the wrong channel!", ephemeral=False
         )
         return
 
