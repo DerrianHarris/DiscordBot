@@ -10,7 +10,7 @@ import discord
 from typing import Optional
 from dotenv import load_dotenv
 
-from ApexHostingApi import ApexHostingApi
+#from ApexHostingApi import ApexHostingApi
 from NitradoApi import NitradoApi
 
 load_dotenv()
