@@ -78,18 +78,18 @@ class NitradoApi:
 
     async def safe_start_server(self, game="arksa"):
         print("Running safe server start")
-        server_status = self.get_server_status()
+        server_status = await self.get_server_status()
         if server_status.lower() in ["stopped"]:
-            status = self.stop_server()
+            status = await self.start_server(game)
         else:
-            status = "Cannot stop server! Current server status: " + server_status
+            status = "Cannot start server! Current server status: " + server_status
         return status
 
     async def safe_stop_server(self):
         print("Running safe server stop")
-        server_status = self.get_server_status()
+        server_status = await self.get_server_status()
         if server_status.lower() in ["started"]:
-            status = self.stop_server()
+            status = await self.stop_server()
         else:
             status = "Cannot stop server! Current server status: " + server_status
         return status
